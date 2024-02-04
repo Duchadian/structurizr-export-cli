@@ -1,0 +1,35 @@
+package cmd
+
+import (
+	"github.com/Duchadian/structurizr-export-cli/internal"
+	"github.com/spf13/cobra"
+	"os"
+)
+
+var rootCmd = &cobra.Command{
+	Use:   "structurizr-export-cli <structurizr url>",
+	Short: "Export PNG images from a structurizr instance",
+	Long:  ``,
+	Args: func(cmd *cobra.Command, args []string) error {
+		if err := cobra.MinimumNArgs(1)(cmd, args); err != nil {
+			return err
+		}
+		return nil
+	},
+	Run: func(cmd *cobra.Command, args []string) {
+		rodUrl, _ := cmd.Flags().GetString("rod-url")
+		structurizrUrl := args[0]
+		internal.ExtractImages(structurizrUrl, rodUrl)
+	},
+}
+
+func Execute() {
+	err := rootCmd.Execute()
+	if err != nil {
+		os.Exit(1)
+	}
+}
+
+func init() {
+	rootCmd.Flags().String("rod-remote", "", "Set a remote rod instance to connect to")
+}
