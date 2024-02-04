@@ -6,6 +6,7 @@ import (
 	"github.com/apex/log"
 	"github.com/go-rod/rod"
 	"github.com/go-rod/rod/lib/launcher"
+	"github.com/go-rod/rod/lib/proto"
 	"github.com/ysmood/gson"
 	"os"
 	"strings"
@@ -59,10 +60,16 @@ func setupBrowser(rodUrl string) *rod.Browser {
 	return browser
 }
 
-func ExtractImages(url string, rodUrl string) {
-	log.Infof("Running with url '%s' and rod url '%s'", url, rodUrl)
+func ExtractImages(url string, rodUrl string, exportDir string) {
+	log.Debugf("Running with url '%s' and rod url '%s'", url, rodUrl)
 	browser := setupBrowser(rodUrl)
-	page := browser.MustPage(url)
+	opts := proto.TargetCreateTarget{URL: url}
+
+	var err error
+	var page *rod.Page
+	if page, err = browser.Page(opts); err != nil {
+		log.Fatalf("Cannot connect to url '%s', exiting", opts.URL)
+	}
 
 	page.MustWaitNavigation()
 
@@ -87,7 +94,7 @@ func ExtractImages(url string, rodUrl string) {
 		"() => structurizr.scripting.getViews()",
 	)
 
-	os.Mkdir("export", os.FileMode(0774))
+	os.MkdirAll(exportDir, os.FileMode(0774))
 
 	for _, val := range views.Arr() {
 		log.Infof("Looking for view %s", val)
@@ -102,7 +109,7 @@ func ExtractImages(url string, rodUrl string) {
 			`(f) => structurizr.scripting.exportCurrentDiagramToPNG({ includeMetadata: true, crop: false},
 					function(png) { window.savePNG({"image": png, "filename": f}) }
 				)`,
-			fmt.Sprintf("export/%s.png", key),
+			fmt.Sprintf("%s/%s.png", exportDir, key),
 		)
 	}
 }

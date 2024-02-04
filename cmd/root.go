@@ -17,9 +17,11 @@ var rootCmd = &cobra.Command{
 		return nil
 	},
 	Run: func(cmd *cobra.Command, args []string) {
-		rodUrl, _ := cmd.Flags().GetString("rod-url")
+		rodUrl, _ := cmd.Flags().GetString("rod-remote")
+		exportDir, _ := cmd.Flags().GetString("export-dir")
 		structurizrUrl := args[0]
-		internal.ExtractImages(structurizrUrl, rodUrl)
+
+		internal.ExtractImages(structurizrUrl, rodUrl, exportDir)
 	},
 }
 
@@ -31,5 +33,6 @@ func Execute() {
 }
 
 func init() {
-	rootCmd.Flags().String("rod-remote", "", "Set a remote rod instance to connect to")
+	rootCmd.Flags().String("rod-remote", "", "Optional remote rod instance to run the browser")
+	rootCmd.Flags().String("export-dir", "export", "Optional directory to export the images to, 'export' by default")
 }
