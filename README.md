@@ -1,7 +1,7 @@
 
 # structurizr-export-cli
 
-A small cli for exporting views as PNG images from [Structurizr](https://structurizr.com/) using a Chrome browser. 
+A small cli for exporting views as PNG images from [Structurizr](https://structurizr.com/) using a Chrome browser.
 It will automatically look for the views defined in your `workspace.dsl` file and export those to PNG images.
 Like [Structurizr Puppeteer](https://github.com/structurizr/puppeteer), this connects to the Structurizr instance and exports images from there directly, no conversions in between.
 Very much a work in progress, not recommended for users that experience discomfort at seeing Golang stack traces.
@@ -50,6 +50,33 @@ the cli can then be configured to use this instance:
 
 Keep in mind that your Structurizr url needs to be resolvable _from the rod container_. 
 `localhost` will likely not work.
+An example Gitlab job to demonstrate what configuration _will_ work (assuming you have the cli in your project root):
+
+```yaml
+extract_diagrams:
+  stage: extract_diagrams
+  image: docker:19
+  variables:
+    DOCKER_DRIVER: overlay2
+    DOCKER_HOST: tcp://docker:2375
+    DOCKER_TLS_CERTDIR: ""
+    FF_NETWORK_PER_BUILD: "true"
+  services:
+    - name: docker:dind
+      alias: docker
+  script:
+    - docker run --rm -d --name structurizr -p 8080:8080 -v "$(pwd):/usr/local/structurizr" structurizr/lite
+    - docker run --rm -d --name rod -p 7317:7317 ghcr.io/go-rod/rod
+    - sleep 5
+    - ./structurizr-export-cli --rod-remote=ws://docker:7317 http://$(docker inspect -f '{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}' structurizr):8080
+    - docker rm --force structurizr
+    - docker rm --force rod
+  artifacts:
+    paths:
+      - "export/*.png"
+    untracked: false
+    when: on_success
+```
 
 ## TODO
 - add authentication option
