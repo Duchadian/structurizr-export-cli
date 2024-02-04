@@ -34,5 +34,5 @@ func Execute() {
 
 func init() {
 	rootCmd.Flags().String("rod-remote", "", "Optional remote rod instance to run the browser")
-	rootCmd.Flags().String("export-dir", "export", "Optional directory to export the images to, 'export' by default")
+	rootCmd.Flags().String("export-dir", "export", "Optional directory to export the images to")
 }
