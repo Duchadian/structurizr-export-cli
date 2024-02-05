@@ -15,6 +15,7 @@ import (
 
 func waitForDiagramLoaded(page *rod.Page) {
 	for {
+		page.MustWaitStable()
 		isLoaded := page.MustEval("() => structurizr.scripting.isDiagramRendered()")
 		if isLoaded.Bool() {
 			break
@@ -112,4 +113,7 @@ func ExtractImages(url string, rodUrl string, exportDir string) {
 			fmt.Sprintf("%s/%s.png", exportDir, key),
 		)
 	}
+
+	page.MustWaitStable()
+	browser.MustClose()
 }
